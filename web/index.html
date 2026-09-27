@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>智能服务赛道 · 两个极简 demo</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --fg:#e6e8ec; --dim:#9aa3b2; --accent:#4f9dff; --ok:#3ecf8e;
+    --warn:#ffb020; --bad:#ff5f56;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+  header{padding:20px 24px;border-bottom:1px solid var(--line);background:var(--panel)}
+  h1{margin:0 0 4px;font-size:19px}
+  h2{font-size:15px;margin:0 0 10px}
+  h3{font-size:13px;margin:16px 0 8px;color:var(--dim);font-weight:600;
+     text-transform:uppercase;letter-spacing:.06em}
+  .sub{color:var(--dim);font-size:13px}
+  nav{display:flex;gap:8px;padding:12px 24px;border-bottom:1px solid var(--line);
+      background:var(--panel);position:sticky;top:0;z-index:5}
+  nav button{background:transparent;border:1px solid var(--line);color:var(--dim);
+      padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+  nav button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  main{padding:20px 24px 60px;max-width:1180px;margin:0 auto}
+  .page{display:none} .page.on{display:block}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+        padding:16px;margin-bottom:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input[type=text]{flex:1;min-width:220px;background:var(--panel2);border:1px solid var(--line);
+        color:var(--fg);padding:10px 12px;border-radius:8px;font-size:14px}
+  button.act{background:var(--accent);border:none;color:#fff;padding:10px 18px;
+        border-radius:8px;cursor:pointer;font-weight:600}
+  button.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--fg);
+        padding:7px 12px;border-radius:8px;cursor:pointer;font-size:12.5px}
+  button.act:disabled{opacity:.55;cursor:default}
+  .chip{display:inline-block;background:var(--panel2);border:1px solid var(--line);
+        border-radius:999px;padding:2px 9px;font-size:12px;color:var(--dim);margin:2px 4px 2px 0}
+  .chip.hit{color:var(--ok);border-color:#25543f}
+  .chip.miss{color:var(--bad);border-color:#5a2b2b}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:12px}
+  tr.hit td{background:rgba(62,207,142,.07)}
+  tr.miss td{background:rgba(255,95,86,.07)}
+  .score{font-variant-numeric:tabular-nums;font-weight:600}
+  .bar{height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-top:4px}
+  .bar > i{display:block;height:100%;background:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .kpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .kpi .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .kpi .l{font-size:12px;color:var(--dim)}
+  .up{color:var(--ok)} .down{color:var(--bad)} .flat{color:var(--dim)}
+  .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:12.5px}
+  details{margin-top:10px}
+  summary{cursor:pointer;color:var(--dim);font-size:12.5px}
+  .prob{display:flex;align-items:center;gap:8px;margin:3px 0}
+  .prob .n{width:110px;color:var(--dim);font-size:12.5px}
+  .prob .b{flex:1;height:16px;background:var(--panel2);border-radius:4px;overflow:hidden}
+  .prob .b > i{display:block;height:100%;background:var(--accent)}
+  .prob .v{width:52px;text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600}
+  .badge.auto{background:rgba(62,207,142,.15);color:var(--ok)}
+  .badge.assist{background:rgba(255,176,32,.15);color:var(--warn)}
+  .badge.human{background:rgba(255,95,86,.15);color:var(--bad)}
+  .cm td{text-align:center;font-variant-numeric:tabular-nums}
+  .cm th{text-align:center;font-size:11px}
+  .cm .diag{font-weight:700}
+  .note{color:var(--dim);font-size:12.5px;background:var(--panel2);border-left:2px solid var(--accent);
+        padding:9px 12px;border-radius:0 8px 8px 0;margin-top:10px}
+  .spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--line);
+        border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;
+        vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .muted{color:var(--dim)}
+  code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>智能服务赛道 · 两个极简 demo</h1>
+  <div class="sub">
+    ① 历史工单检索：向量召回 + 规则重排 &nbsp;·&nbsp; ② 客服意图分类：逻辑回归 vs 轻量 MLP
+    &nbsp;·&nbsp; 纯 Python 标准库实现，无第三方依赖
+  </div>
+</header>
+<nav>
+  <button class="on" data-page="p1">① 召回 + 重排</button>
+  <button data-page="p2">② 意图分类</button>
+  <button data-page="p3">③ 评测汇总</button>
+</nav>
+<main>
+
+<!-- ================= 页面 1 ================= -->
+<section class="page on" id="p1">
+  <div class="card">
+    <h2>输入用户原话，看两段式排序各自做了什么</h2>
+    <div class="row">
+      <input type="text" id="q" value="充电宝能给手机充电，但是自己充不进去电" />
+      <select id="k" class="ghost" style="padding:9px">
+        <option value="3">Top 3</option>
+        <option value="5" selected>Top 5</option>
+      </select>
+      <button class="act" id="btnSearch">检索</button>
+    </div>
+    <div style="margin-top:10px" id="examples"></div>
+  </div>
+
+  <div class="card" id="p1-result" style="display:none">
+    <h2>重排后的结果</h2>
+    <div id="p1-summary" class="sub" style="margin-bottom:10px"></div>
+    <table>
+      <thead><tr>
+        <th style="width:44px">#</th><th>工单</th><th style="width:96px">最终分</th>
+        <th style="width:96px">召回分</th><th style="width:112px">排名变化</th><th style="width:190px">特征命中</th>
+      </tr></thead>
+      <tbody id="p1-rows"></tbody>
+    </table>
+    <div class="note" id="p1-note"></div>
+  </div>
+</section>
+
+<!-- ================= 页面 2 ================= -->
+<section class="page" id="p2">
+  <div class="card">
+    <h2>输入一句话，三个模型同时给出意图</h2>
+    <div class="row">
+      <input type="text" id="ctext" value="耳机只有一边有声音，另一只连不上" />
+      <button class="act" id="btnClf">预测</button>
+    </div>
+    <div style="margin-top:10px" id="cexamples"></div>
+    <div class="note">
+      首次预测需要训练三个模型（约 15 秒），之后走缓存。模型指标见「③ 评测汇总」。
+    </div>
+  </div>
+
+  <div class="card" id="p2-result" style="display:none">
+    <h2>预测结果</h2>
+    <div id="p2-action" style="margin-bottom:12px"></div>
+    <div class="grid" id="p2-cards"></div>
+    <h3>逻辑回归的 Top 3 概率</h3>
+    <div id="p2-probs"></div>
+    <div class="note" id="p2-feat"></div>
+  </div>
+</section>
+
+<!-- ================= 页面 3 ================= -->
+<section class="page" id="p3">
+  <div class="card">
+    <h2>① 检索排序：只召回 vs 召回+重排</h2>
+    <div class="grid" id="eval-kpi"><div class="muted">加载中…</div></div>
+    <h3>逐条查询</h3>
+    <table>
+      <thead><tr>
+        <th>查询</th><th style="width:56px">难度</th><th>仅召回的 Top1</th>
+        <th>重排后的 Top1</th><th style="width:74px">正确排名</th>
+      </tr></thead>
+      <tbody id="eval-rows"></tbody>
+    </table>
+    <div class="note" id="eval-limitation">
+      <b>怎么读：</b>召回分只反映"字面相似"，重排分额外看标题词覆盖、实词覆盖率、
+      分类亲和度、历史处理质量，以及复合症状里"转折之后那半句"是否被覆盖，
+      并对同一答案组的重复工单做惩罚。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 意图分类：三个模型对比</h2>
+    <div class="grid" id="clf-kpi"><div class="muted">
+      点下面的按钮开始训练（约 15 秒）</div></div>
+    <div class="row" style="margin-top:12px">
+      <button class="ghost" id="btnTrain">训练并查看指标</button>
+      <button class="ghost" id="btnCV">跑 4 折交叉验证</button>
+    </div>
+    <div id="cv-out" class="note" style="display:none"></div>
+  </div>
+
+  <div class="card" id="clf-more" style="display:none">
+    <h3>逐类指标（留出集）</h3>
+    <table>
+      <thead><tr><th>类别</th><th>precision</th><th>recall</th><th>f1</th><th>样本数</th></tr></thead>
+      <tbody id="clf-rows"></tbody>
+    </table>
+    <h3>混淆矩阵 · 逻辑回归</h3>
+    <div id="cm-logreg" class="cm-wrap"></div>
+    <h3>训练损失曲线</h3>
+    <div id="curves"></div>
+    <div class="note" id="clf-conclusion"></div>
+  </div>
+</section>
+
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+const api = async (url, opt) => {
+  const r = await fetch(url, opt);
+  const j = await r.json().catch(() => ({error: "返回不是 JSON"}));
+  if (!r.ok) throw new Error(j.error || ("HTTP " + r.status));
+  return j;
+};
+const pct = (x) => (x * 100).toFixed(1) + "%";
+const esc = (s) => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+// ---- 导航 ----
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id === b.dataset.page));
+  if (b.dataset.page === "p3") { loadEval(); }
+});
+
+// ---- 页面 1 ----
+const QUERIES = [
+  "充电宝能给手机充电，但是自己充不进去电",
+  "充电口里有灰，线插不到底",
+  "耳机连电脑没声音，连手机正常",
+  "退款和退货有什么区别，钱多久到账",
+  "快递三天没更新是不是丢件了",
+  "发票抬头写错字了能重开吗",
+];
+$("#examples").innerHTML = QUERIES.map(q =>
+  `<button class="ghost" onclick="runSearch(${JSON.stringify(q).replace(/"/g,'&quot;')})">${esc(q)}</button>`
+).join(" ");
+
+function featureChips(f, limit = 6) {
+  const chips = [];
+  (f.covered_terms || []).slice(0, limit).forEach(t => chips.push(`<span class="chip hit">${esc(t)}</span>`));
+  (f.missed_terms || []).slice(0, 3).forEach(t => chips.push(`<span class="chip miss">×${esc(t)}</span>`));
+  return chips.join("") || '<span class="muted">—</span>';
+}
+
+async function runSearch(q) {
+  q = q || $("#q").value.trim();
+  if (!q) return;
+  $("#q").value = q;
+  $("#btnSearch").disabled = true;
+  $("#p1-result").style.display = "block";
+  $("#p1-rows").innerHTML = `<tr><td colspan="6"><span class="spinner"></span>检索中…</td></tr>`;
+  try {
+    const d = await api(`/api/retrieval/search?q=${encodeURIComponent(q)}&k=${$("#k").value}`);
+    const goldHint = "";
+    const maxScore = Math.max(...d.results.map(r => r.final_score), 1e-6);
+    $("#p1-summary").innerHTML =
+      `候选池 ${d.pool_size} 条 · 分词后 ${d.tokens.length} 个 token · ` +
+      `有 ${d.changed.length} 条工单的排名被重排改动`;
+    $("#p1-rows").innerHTML = d.results.map((r, i) => {
+      const delta = r.rank_delta;
+      const deltaTxt = delta > 0 ? `<span class="up">↑ 上升 ${delta}</span>`
+        : delta < 0 ? `<span class="down">↓ 下降 ${-delta}</span>` : `<span class="flat">—</span>`;
+      return `<tr>
+        <td class="mono">${i + 1}</td>
+        <td><div style="font-weight:600">${esc(r.title)}</div>
+            <div class="muted" style="font-size:12.5px">${esc(r.id)} · ${esc(r.cat)} · 答案组 ${esc(r.group)}
+            ${r.helpful ? '<span class="chip hit">历史已解决</span>' : '<span class="chip">历史未解决</span>'}</div>
+            <div class="muted" style="font-size:12.5px;margin-top:4px">${esc(r.text)}</div></td>
+        <td><span class="score">${r.final_score.toFixed(3)}</span>
+            <div class="bar"><i style="width:${(r.final_score / maxScore * 100).toFixed(1)}%"></i></div></td>
+        <td class="mono">${r.recall_score.toFixed(3)}</td>
+        <td>${deltaTxt}</td>
+        <td style="font-size:12px">${featureChips(r.features)}</td>
+      </tr>
+      <tr><td></td><td colspan="5" style="padding-top:0">
+        <details><summary>看这一条的分数构成（原始特征 → 加权得分）</summary>
+        <div class="mono muted" style="margin-top:6px">
+          相似度 sim=${r.features.sim} ×权重 → ${(r.contrib.sim ?? 0)}<br>
+          BM25=${r.features.bm25}（原始 ${r.features.bm25_raw}）×权重 → ${(r.contrib.bm25 ?? 0)}<br>
+          词覆盖=${r.features.coverage} ×权重 → ${(r.contrib.coverage ?? 0)}<br>
+          标题命中=${r.features.title} ×权重 → ${(r.contrib.title ?? 0)}<br>
+          分类亲和=${r.features.cat} ×权重 → ${(r.contrib.cat ?? 0)}<br>
+          历史质量=${r.features.helpful} ×权重 → ${(r.contrib.helpful ?? 0)}<br>
+          转折对齐=${r.features.clause} ×权重 → ${(r.contrib.clause ?? 0)}<br>
+          <span style="color:var(--dim)">未覆盖的查询词：${(r.features.missed_terms || []).join("、") || "无"}</span>
+        </div></details>
+      </td></tr>`;
+    }).join("");
+    $("#p1-note").innerHTML =
+      `<b>两段式的意思：</b>第一阶段只求别漏（候选池 ${d.pool_size} 条），第二阶段才决定顺序。
+       表里的「召回分」是纯 TF-IDF 相似度，「最终分」是加了规则特征之后的分数，
+       两者差得越多，说明规则特征起的作用越大。`;
+  } catch (e) {
+    $("#p1-rows").innerHTML = `<tr><td colspan="6" class="down">${esc(e.message)}</td></tr>`;
+  } finally {
+    $("#btnSearch").disabled = false;
+  }
+}
+$("#btnSearch").onclick = () => runSearch();
+
+// ---- 页面 2 ----
+const CEX = [
+  "耳塞丢了，哪能买到", "扣了两次钱，退一份给我", "我要投诉",
+  "新买的怎么用，教一下", "快递卡在路上了，啥时候到", "抬头打错了能重开不",
+];
+$("#cexamples").innerHTML = CEX.map(t =>
+  `<button class="ghost" onclick="runClf(${JSON.stringify(t).replace(/"/g,'&quot;')})">${esc(t)}</button>`
+).join(" ");
+
+async function runClf(t) {
+  const text = t || $("#ctext").value.trim();
+  if (!text) return;
+  $("#ctext").value = text;
+  $("#btnClf").disabled = true;
+  $("#p2-result").style.display = "block";
+  $("#p2-cards").innerHTML = `<div class="muted"><span class="spinner"></span>预测中（首次会训练模型，约 15 秒）…</div>`;
+  $("#p2-probs").innerHTML = ""; $("#p2-action").innerHTML = ""; $("#p2-feat").innerHTML = "";
+  try {
+    const d = await api("/api/classify", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text})
+    });
+    const names = {keyword: "关键词打分（baseline）", logreg: "逻辑回归 + TF-IDF", mlp: "轻量 MLP（1 隐层）"};
+    $("#p2-action").innerHTML =
+      `系统建议：<span class="badge ${d.action.level}">${esc(d.action.text)}</span>`;
+    $("#p2-cards").innerHTML = Object.entries(d.models).map(([k, v]) => `
+      <div class="kpi">
+        <div class="l">${names[k]}</div>
+        <div class="v">${esc(v.label_cn)}</div>
+        <div class="l">置信度 ${pct(v.confidence)} · 与第二名差 ${pct(v.margin)}</div>
+        <div class="mono muted" style="font-size:11.5px">${esc(v.label)}</div>
+      </div>`).join("");
+    $("#p2-probs").innerHTML = d.models.logreg.top3.map(x => `
+      <div class="prob">
+        <div class="n">${esc(x.label_cn)}</div>
+        <div class="b"><i style="width:${(x.p * 100).toFixed(1)}%"></i></div>
+        <div class="v">${pct(x.p)}</div>
+      </div>`).join("");
+    $("#p2-feat").innerHTML =
+      `这句话命中 ${d.features.n_nonzero} 个非零特征（词表共 ${d.features.dim} 维）。
+       置信度低于 45% 时系统会建议转人工——这是智能客服里最实用的一个兜底策略。`;
+  } catch (e) {
+    $("#p2-cards").innerHTML = `<div class="down">${esc(e.message)}</div>`;
+  } finally {
+    $("#btnClf").disabled = false;
+  }
+}
+$("#btnClf").onclick = () => runClf();
+
+// ---- 页面 3：检索评测 ----
+let evalLoaded = false;
+async function loadEval() {
+  if (evalLoaded) return;
+  try {
+    const d = await api("/api/retrieval/eval");
+    const b = d.baseline, r = d.rerank;
+    const kpis = [
+      ["Recall@1", b["recall@1"], r["recall@1"], true],
+      ["Recall@3", b["recall@3"], r["recall@3"], true],
+      ["MRR", b.mrr, r.mrr, true],
+      ["nDCG@3", b["ndcg@3"], r["ndcg@3"], true],
+    ];
+    $("#eval-kpi").innerHTML = kpis.map(([name, bv, rv, hi]) => {
+      const diff = rv - bv;
+      const cls = diff > 0 ? "up" : diff < 0 ? "down" : "flat";
+      const sign = diff > 0 ? "+" : "";
+      return `<div class="kpi">
+        <div class="l">${name}</div>
+        <div class="v">${rv.toFixed(3)}</div>
+        <div class="l">仅召回 ${bv.toFixed(3)} ·
+          <span class="${cls}">${sign}${diff.toFixed(3)}</span></div>
+      </div>`;
+    }).join("") + `<div class="kpi">
+        <div class="l">Top1 被改写的查询</div>
+        <div class="v">${d.flip.n} / ${d.per_query.length}</div>
+        <div class="l">改对 ${d.flip.improved} · 改错 ${d.flip.worsened} · 未变 ${d.flip.unchanged}</div>
+      </div><div class="kpi">
+        <div class="l">仍然答错的查询</div>
+        <div class="v">${d.failed_queries.length}</div>
+        <div class="l">${esc((d.failed_queries[0] || "无").slice(0, 14))}${d.failed_queries.length > 1 ? " 等" : ""}</div>
+      </div>`;
+    $("#eval-rows").innerHTML = d.per_query.map(x => `
+      <tr class="${x.top1_hit ? "hit" : "miss"}">
+        <td>${esc(x.query)}</td>
+        <td class="muted">${esc(x.difficulty || "")}</td>
+        <td class="muted" style="font-size:12.5px">
+          ${x.baseline_top1_hit ? "✅ " : "❌ "}${esc(x.baseline_top1)}</td>
+        <td style="font-size:12.5px">${x.top1_hit ? "✅ " : "❌ "}${esc(x.top1)}</td>
+        <td class="mono">${x.rank_of_gold ?? "未命中"}</td>
+      </tr>`).join("");
+    $("#eval-limitation").innerHTML =
+      `<b>怎么读：</b>召回分只反映"字面相似"，重排分额外看标题词覆盖、实词覆盖率、
+       分类亲和度、历史处理质量，以及复合症状里"转折之后那半句"是否被覆盖，
+       并对同一答案组的重复工单做惩罚。
+       <br><b>局限：</b>${esc(d.limitation)}`;
+    evalLoaded = true;
+  } catch (e) {
+    $("#eval-kpi").innerHTML = `<div class="down">${esc(e.message)}</div>`;
+  }
+}
+
+// ---- 页面 3：分类指标 ----
+function renderClf(d) {
+  const names = {keyword: "关键词打分", logreg: "逻辑回归", mlp: "轻量 MLP"};
+  $("#clf-kpi").innerHTML = Object.entries(d.report).map(([k, v]) => `
+    <div class="kpi">
+      <div class="l">${names[k]} · accuracy</div>
+      <div class="v">${pct(v.accuracy)}</div>
+      <div class="l">95% 区间 ${pct(v.accuracy_ci95[0])}~${pct(v.accuracy_ci95[1])}</div>
+      <div class="l">macro-F1 ${v.macro_f1.toFixed(3)} · 平均置信度 ${v.mean_confidence}</div>
+    </div>`).join("") + `<div class="kpi">
+      <div class="l">训练 / 留出样本</div>
+      <div class="v">${d.n_train} / ${d.n_test}</div>
+      <div class="l">特征维度 ${d.dim}（TF-IDF + 字符二元组）</div></div>`;
+
+  const lr = d.report.logreg.per_class;
+  $("#clf-rows").innerHTML = Object.entries(lr).map(([k, v]) => `
+    <tr><td>${esc(v.label_cn)} <span class="mono muted">${esc(k)}</span></td>
+      <td class="mono">${v.precision.toFixed(3)}</td>
+      <td class="mono">${v.recall.toFixed(3)}</td>
+      <td class="mono">${v.f1.toFixed(3)}</td>
+      <td class="mono">${v.support}</td></tr>`).join("");
+
+  const labels = d.labels.map(l => d.label_cn[l]);
+  const cm = d.confusion.logreg;
+  let html = `<table><thead><tr><th>真实 \\ 预测</th>${labels.map(l => `<th>${esc(l)}</th>`).join("")}</tr></thead><tbody>`;
+  cm.forEach((row, i) => {
+    html += `<tr><th>${esc(labels[i])}</th>` + row.map((v, j) => {
+      const bg = v ? `background:rgba(79,157,255,${(0.12 + 0.55 * v / Math.max(1, Math.max(...cm.flat()))).toFixed(2)})` : "";
+      return `<td style="${bg}" class="${i === j && v ? "diag" : ""}">${v || ""}</td>`;
+    }).join("") + "</tr>";
+  });
+  html += "</tbody></table>";
+  $("#cm-logreg").innerHTML = html;
+
+  const h = d.history.logreg;
+  const maxLoss = Math.max(...h.map(x => x.loss), 1e-6);
+  $("#curves").innerHTML = `<div class="mono muted" style="font-size:12px">训练损失（每 5 轮记录一次，共 ${h.length} 个点）</div>` +
+    h.map(x => `<div class="prob"><div class="n">epoch ${x.epoch}</div>
+      <div class="b"><i style="width:${(x.loss / maxLoss * 100).toFixed(1)}%"></i></div>
+      <div class="v">${x.loss.toFixed(3)}</div></div>`).join("");
+  $("#clf-conclusion").innerHTML = `<b>结论：</b>${esc(d.conclusion)}`;
+  $("#clf-more").style.display = "block";
+}
+
+$("#btnTrain").onclick = async () => {
+  $("#btnTrain").disabled = true;
+  $("#clf-kpi").innerHTML = `<div class="muted"><span class="spinner"></span>训练中，约 15 秒…</div>`;
+  try { renderClf(await api("/api/classify/stats")); }
+  catch (e) { $("#clf-kpi").innerHTML = `<div class="down">${esc(e.message)}</div>`; }
+  finally { $("#btnTrain").disabled = false; }
+};
+
+$("#btnCV").onclick = async () => {
+  $("#btnCV").disabled = true;
+  const out = $("#cv-out");
+  out.style.display = "block";
+  out.innerHTML = `<span class="spinner"></span>4 折交叉验证中（约 40 秒）…`;
+  try {
+    const d = await api("/api/classify/cv", {method: "POST", headers: {"Content-Type": "application/json"}, body: "{}"});
+    out.innerHTML = `<b>4 折交叉验证（未扩增的手写数据，${d.n_samples} 条）：</b><br>` +
+      `逻辑回归 accuracy = <b>${d.logreg.mean}</b> ± ${d.logreg.std}（各折 ${d.logreg.folds.join(", ")}）<br>` +
+      `轻量 MLP accuracy = <b>${d.mlp.mean}</b> ± ${d.mlp.std}（各折 ${d.mlp.folds.join(", ")}）<br>` +
+      `<span class="muted">折间波动比模型差距还大，说明当前数据量下两者的差异不显著——
+       这也正是"该补数据而不是换更大模型"的证据。</span>`;
+  } catch (e) { out.innerHTML = `<span class="down">${esc(e.message)}</span>`; }
+  finally { $("#btnCV").disabled = false; }
+};
+
+// 初始：先跑一次检索示例
+runSearch(QUERIES[0]);
+</script>
+</body>
+</html>
