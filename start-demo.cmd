@@ -1,6 +1,13 @@
 @echo off
-REM 一键启动 demo（Windows）
-REM 用法：双击本文件，或在命令行执行 start-demo.cmd [端口]
+REM ============================================================
+REM  Start the two demos (web UI) on Windows.
+REM
+REM  Usage: double-click this file, or run:
+REM      start-demo.cmd [port]        (default port: 8000)
+REM
+REM  ASCII only on purpose: cmd.exe reads .cmd files using the console
+REM  code page, so non-ASCII text here would be garbled on zh-CN Windows.
+REM ============================================================
 setlocal
 set PORT=%1
 if "%PORT%"=="" set PORT=8000
@@ -8,6 +15,9 @@ if "%PORT%"=="" set PORT=8000
 cd /d "%~dp0"
 set PYTHONIOENCODING=utf-8
 set DEMO_PORT=%PORT%
+
+echo Starting demo server on http://127.0.0.1:%PORT%
+echo Press Ctrl+C to stop.
 
 where py >nul 2>nul
 if %errorlevel%==0 (
@@ -17,5 +27,5 @@ if %errorlevel%==0 (
 )
 
 echo.
-echo 服务已退出。
+echo Server exited.
 pause

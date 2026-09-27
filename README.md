@@ -16,10 +16,28 @@ python serving.py
 # 浏览器打开 http://127.0.0.1:8000
 ```
 
-页面分三个标签：① 召回 + 重排的逐条分数拆解、② 三个模型的意图预测对比、
-③ 两个任务的离线评测指标。
+Windows 下也可以直接双击 `start-demo.cmd`（默认 8000 端口，可传参换端口）。
+两个 `.cmd` 脚本刻意只用 ASCII 字符：cmd.exe 按控制台码页解析 `.cmd` 文件，
+在里面写中文在 zh-CN 系统上会变成乱码导致命令解析失败。
 
-想换端口：`DEMO_PORT=8125 python serving.py`（Windows PowerShell 用 `$env:DEMO_PORT=8125`）。
+页面分三个标签：① 召回 + 重排的逐条分数拆解、② 三个模型的意图预测对比、
+③ 两个任务的离线评测指标。换端口：`DEMO_PORT=8125 python serving.py`
+（Windows PowerShell 用 `$env:DEMO_PORT=8125`）。
+
+## 推送到 GitHub
+
+本地仓库已经是干净的（3 个 commit，工作区无未提交改动），推送用：
+
+```powershell
+# 先在 GitHub 网页建一个空仓库（不要勾 README），然后：
+git config user.name  "你的名字"                  # 本机没有全局 git 身份
+git config user.email "你的邮箱"
+git commit --amend --reset-author --no-edit       # 把占位作者信息改成你自己的
+push-to-github.cmd https://github.com/你的用户名/仓库名.git
+```
+
+`push-to-github.cmd` 会自动处理本机 git 配置里的 GitHub 镜像代理规则
+（该镜像不保证支持 push），且不会改动全局配置。
 
 ## 自检
 
@@ -45,6 +63,8 @@ demo/
 ├── web/index.html              # 单页界面（原生 JS，无构建步骤）
 ├── serving.py                  # 本地 HTTP 服务（标准库 http.server）
 ├── smoke_test.py  api_test.py  # 自检
+├── start-demo.cmd              # Windows 一键启动（纯 ASCII）
+├── push-to-github.cmd          # Windows 一键推送（自动绕过镜像代理）
 ├── bench.py  tune.py  probe_rank.py   # 开发期用的计时/调参/策略对比脚本
 └── README.md
 ```
