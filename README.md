@@ -1,12 +1,12 @@
-# 智能服务赛道 · 两个极简 demo
+# 客服场景 · 两个极简 demo
 
-面向 Anker 黑客松**智能服务赛道**（AI 客服 Agent + 交互前端）的两个可运行小 demo。
+客服问答场景里的两个可运行小 demo：历史工单检索排序、用户意图分类。
 纯 Python 标准库实现，**不需要 pip install 任何东西**，clone 下来就能跑。
 
-| demo | 做什么 | 对应方案里的哪句话 |
-| --- | --- | --- |
-| `01_recall_rerank/` | 历史工单检索：TF-IDF 向量召回 + 规则重排 | "把文本向量化后用相似度做召回，再叠一层规则和加权打分做重排" |
-| `02_intent_classifier/` | 客服意图分类：逻辑回归 vs 轻量 MLP vs 关键词 baseline | "给客服问答做意图分类，用逻辑回归和轻量模型跑对比实验" |
+| demo | 做什么 |
+| --- | --- |
+| `01_recall_rerank/` | 历史工单检索：TF-IDF 向量召回 + 规则重排 |
+| `02_intent_classifier/` | 客服意图分类：逻辑回归 vs 轻量 MLP vs 关键词 baseline |
 
 ## 快速开始
 

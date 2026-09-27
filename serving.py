@@ -85,7 +85,7 @@ def classify_text(text: str) -> dict:
             ],
             "margin": round(proba[order[0]] - proba[order[1]], 4),
         }
-    # 业务动作建议：置信度低就建议转人工，这也是智能服务赛道的常见设计
+    # 业务动作建议：置信度低就建议转人工，这是客服系统里最常见的兜底设计
     conf = out["logreg"]["confidence"]
     margin = out["logreg"]["margin"]
     if conf >= 0.7 and margin >= 0.35:
